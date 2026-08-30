@@ -5,6 +5,7 @@
     "type": "git",
     "url": "git+https://github.com/danielgnth/resulttype.git"
   },
+  "license": "MIT",
   "type": "module",
   "sideEffects": false,
   "scripts": {
@@ -57,7 +58,9 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public",
