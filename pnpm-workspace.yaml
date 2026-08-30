@@ -1,0 +1,3 @@
+allowBuilds:
+  gitleaks-secret-scanner: true
+  lefthook: true

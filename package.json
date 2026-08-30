@@ -1,0 +1,97 @@
+{
+  "name": "@dx47/resulttype",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/danielgnth/resulttype.git"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown --platform neutral --publint",
+    "dev": "tsdown --watch",
+    "lint": "biome check .",
+    "test": "bun test --conditions=development",
+    "typecheck": "tsc --noEmit",
+    "publish": "pnpm publish --access public --no-git-checks",
+    "commitlint": "commitlint",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.10",
+    "@commitlint/cli": "21.2.2",
+    "@commitlint/config-conventional": "21.2.2",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/sdk-trace-base": "^2.10.0",
+    "@types/bun": "^1.4.0",
+    "gitleaks-secret-scanner": "2.1.1",
+    "lefthook": "2.1.10",
+    "publint": "0.3.24",
+    "tsdown": "0.22.14",
+    "typescript": "7.0.2"
+  },
+  "imports": {
+    "#*": "./src/*.ts"
+  },
+  "exports": {
+    ".": {
+      "development": "./src/resulttype/index.ts",
+      "types": "./dist/resulttype/index.d.ts",
+      "default": "./dist/resulttype/index.js"
+    },
+    "./errors": {
+      "development": "./src/errors/index.ts",
+      "types": "./dist/errors/index.d.ts",
+      "default": "./dist/errors/index.js"
+    },
+    "./catalogue": {
+      "development": "./src/catalogue/index.ts",
+      "types": "./dist/catalogue/index.d.ts",
+      "default": "./dist/catalogue/index.js"
+    },
+    "./interop/otel": {
+      "development": "./src/interop/otel.ts",
+      "types": "./dist/interop/otel.d.ts",
+      "default": "./dist/interop/otel.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/resulttype/index.d.ts",
+        "default": "./dist/resulttype/index.js"
+      },
+      "./errors": {
+        "types": "./dist/errors/index.d.ts",
+        "default": "./dist/errors/index.js"
+      },
+      "./catalogue": {
+        "types": "./dist/catalogue/index.d.ts",
+        "default": "./dist/catalogue/index.js"
+      },
+      "./interop/otel": {
+        "types": "./dist/interop/otel.d.ts",
+        "default": "./dist/interop/otel.js"
+      },
+      "./package.json": "./package.json"
+    }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.9.0"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    }
+  }
+}
