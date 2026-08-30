@@ -2,10 +2,15 @@
 // example cannot silently rot. Imports use `#` paths; the README shows the
 // equivalent public specifiers.
 import { defineErrors, params } from '#catalogue/index'
-import { httpStatusFor, redact } from '#errors/index'
-import { tryCatchAsync } from '#resulttype/index'
+import { type Failure, httpStatusFor, redact } from '#errors/index'
+import { err, ok, type Result, tryCatchAsync } from '#resulttype/index'
 
-declare const db: { query(sql: string, args: unknown[]): Promise<{ id: string }[]> }
+interface User {
+  id: string
+  email: string
+}
+
+declare const db: { query<T>(sql: string, args: unknown[]): Promise<T[]> }
 
 const errors = defineErrors({
   'db.unavailable': { kind: 'availability' },
@@ -17,15 +22,18 @@ const errors = defineErrors({
   },
 })
 
-async function findUser(id: string) {
+async function findUser(
+  id: string,
+): Promise<Result<User, Failure<'db.unavailable' | 'user.not_found'>>> {
   const [rows, error] = await tryCatchAsync(
-    () => db.query('select * from users where id = $1', [id]),
+    () => db.query<User>('select * from users where id = $1', [id]),
     errors.toErr('db.unavailable'),
   )
-  if (error) return [undefined, error] as const
-  if (rows.length === 0)
-    return [undefined, errors.create('user.not_found', { userId: id })] as const
-  return [rows[0], undefined] as const
+  if (error) return err(error)
+
+  const user = rows[0]
+  if (user === undefined) return err(errors.create('user.not_found', { userId: id }))
+  return ok(user)
 }
 
 export async function route() {
@@ -39,5 +47,8 @@ export async function route() {
         return { status: httpStatusFor(error), body: redact(error, 'client_response') }
     }
   }
-  return { status: 200, body: user }
+  // Narrowed to User — not User | undefined, which the previous hand-built
+  // tuple silently allowed through.
+  const email: string = user.email
+  return { status: 200, body: { email } }
 }

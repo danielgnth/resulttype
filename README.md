@@ -21,7 +21,8 @@ for `@dx47/resulttype/interop/otel`.
 ## Quick start
 
 ```ts
-import { tryCatchAsync } from '@dx47/resulttype'
+import { err, ok, type Result, tryCatchAsync } from '@dx47/resulttype'
+import type { Failure } from '@dx47/resulttype/errors'
 import { defineErrors, params } from '@dx47/resulttype/catalogue'
 
 const errors = defineErrors({
@@ -34,17 +35,27 @@ const errors = defineErrors({
   },
 })
 
-async function findUser(id: string) {
-  // A seam *translates* a foreign throw into a code you named.
+async function findUser(
+  id: string,
+): Promise<Result<User, Failure<'db.unavailable' | 'user.not_found'>>> {
+  // A seam *translates* a foreign throw into a code you named, so the error
+  // type stays narrow instead of widening to "something went wrong".
   const [rows, error] = await tryCatchAsync(
-    () => db.query('select * from users where id = $1', [id]),
+    () => db.query<User>('select * from users where id = $1', [id]),
     errors.toErr('db.unavailable'),
   )
-  if (error) return [undefined, error] as const
-  if (rows.length === 0) return [undefined, errors.create('user.not_found', { userId: id })] as const
-  return [rows[0], undefined] as const
-}
+  if (error) return err(error)
 
+  const user = rows[0]
+  if (user === undefined) return err(errors.create('user.not_found', { userId: id }))
+  return ok(user)
+}
+```
+
+At the call site the signature is the documentation — if it is not in the type,
+it cannot happen:
+
+```ts
 const [user, error] = await findUser('u1')
 if (error) {
   switch (error.code) {
@@ -52,6 +63,7 @@ if (error) {
     case 'db.unavailable': return retryLater()
   } // exhaustive — no `default`, and a new code breaks the build
 }
+user.email // narrowed to User, never User | undefined
 ```
 
 ## Two channels
